@@ -30,6 +30,7 @@ nrow(activity)==length(jour)*sum(activity$date==jour[1])
 ```
 
 ###Cortar la base de datos
+
 Ahora de la base de datos grande seria conveniente cortarla por semanas, se sabe que el primero de octubre de 2012 es lunes, por lo tanto hasta el 8 de octubre sería una semana entonces, insertaremos una columna extra a la base de datos (se llamará "counting") que a cada entrada le asigne un número. 
 ```{r}
 activity[,4]<-c(1:nrow(activity))
