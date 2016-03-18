@@ -1,0 +1,125 @@
+---
+title: "Práctica_1"
+author: "MGAZ (Marcel Gustavo Alamán Zárate)"
+date: "March 14, 2016"
+output: 
+  html_document: 
+    keep_md: yes
+---
+# Introducción
+Por medio de dispositivos como el Fibit o la Nike Fuelband, es posible monitorear la actividad diaria de una persona. Los datos abarcan los meses de Octubre y Noviembre de 2012. 
+
+# Procesamiento de los datos 
+
+## Carga de datos 
+
+Se cargaran los datos usando el comando read.csv
+```{r}
+activity<- read.csv("~/Documentos/BioComp/activity.csv")
+```
+Basicamente la idea es poder tener sub-bases de datos, luego entonces lo más conveniente a mi parecer será separarlos de acuerdo al día en que se realizaron los pasos.
+Primero es necesario saber cuantos días distintos hay en la base de datos, eso se hará buscando las fechas únicas y contandolas
+```{r}
+jour<-unique(activity$date)
+length (jour)
+```
+Son 61 días. ¡Albricias!
+Ahora sería conveniente saber si los 61 días tienen el mismo número de entradas para esto: Si el número total de entradas (filas) en la base de datos es igual al número distinto de días por las veces que se repite cualquier día; entonces se puede inferir que todos los días tienen el mismo número de datos.
+```{r}
+nrow(activity)==length(jour)*sum(activity$date==jour[1])
+```
+
+###Cortar la base de datos
+Ahora de la base de datos grande seria conveniente cortarla por semanas, se sabe que el primero de octubre de 2012 es lunes, por lo tanto hasta el 8 de octubre sería una semana entonces, insertaremos una columna extra a la base de datos (se llamará "counting") que a cada entrada le asigne un número. 
+```{r}
+activity[,4]<-c(1:nrow(activity))
+head(activity[,4])
+names(activity)<-c("steps","date","interval","counting")
+```
+
+##Cambiar los valores "NA" en la base de datos
+
+En la columna de "Steps" hay algunos valores NA para ello se sustituiran los valores de N/A por 0 para poder graficarlos. Para asegurar que el comando que se va a ocupar no vaya a borrar datos se pondrá un prueba de seguridad: La cantidad de valores NA en la columna "Steps" sumado a todos los valores debe ser igual a al numero de filas de la base de datos completa.
+```{r}
+nrow(activity)==(sum(is.na(activity$steps))+ length(which(activity$steps>=0)))
+```
+Ahora se procede a cambiar todos los valores NA por 0, se revisara viendo las primeras lineas y se comprobara que ya no existan NA, es espera que al sumar aquellos valores NA el total sea 0 en la columna "Steps"
+```{r}
+activity$steps[is.na(activity$steps)]<-0
+head(activity)
+sum(is.na(activity$steps))
+```
+
+#Calculando medias y medianas
+¡Genial! Ahora hay que sacar la media y la mediana de cada día. Después graficar todo.
+```{r}
+j=1
+medianne<-c(1:61)
+moyenne<-c(1:61)
+res<-matrix(nrow=61, ncol=3, names<-c("Día","Media","Mediana"))
+res[,1]<-c(1:61)
+for (j in 1:61){
+  a=1+(288*(j-1))
+  b=288+(288*(j-1))
+  medianne[j]=median(activity$steps[a:b])
+  moyenne[j]=mean(activity$steps[a:b])
+}
+res[,2]<-medianne
+res[,3]<-moyenne
+print("Dia Mediana Media")
+print(res)
+plot(res[,1],res[,3],"o",main="Medianas por día",xlab="Día",ylab="Mediana de los pasos",col="tomato4")
+plot(res[,1],res[,2],"o",main="Medias por día",xlab="Día",ylab="Media de los pasos",col="turquoise4")
+```
+
+##Patrones de actividad
+Los patrones de actividad se expresarán en una gráfica usando los valores de media y mediana.
+```{r}
+plot(activity[,4]/288,activity[,1],"s",main="Patrones de Actividad ",xlab="Días",ylab="Pasos",col="palegreen4")
+```
+
+##Pasos entre semana y fin de semana
+De forma general: Se trabajará con los datos de medias, para hacer la comparación.  
+Se definirán las variables a ocupar
+```{r}
+med1<-c(median(moyenne[1:5]),0)
+c=1
+d=5
+```
+"med1" funcionará como pivote para tener una media general de los días entre semana, "c" y "d" son los marcadores de posición. Se usará un ciclo for para poder sacar las medias desde la matriz "moyenne". El ciclo *for* calculará la media de los datos, la media general se guardará en en la primera posición del vector "med1", mientras que la media de un nuevo lote de datos se guardará en la segunda posición del vector "med1". Para el valor inicial en la primera posición del vector "med1" se ocupará la media del primer lote de datos eso es los primeros 5 días. Al terminar el ciclo se vuelve calcular la media entre lote de datos y la media general.  
+```{r}
+for (i in 1:9){
+  c=1+7*(i-1)
+  d=5+7*(i-1)
+  med1[1]=median(med1[1:2])
+  med1[2]=median(median(moyenne[c:d]))
+}
+med1[1]=median(med1[1:2])
+```
+Para los datos en fin de semana se sigue la misma estrategia descrita anteriormente solo que ahora el vector ha de llamarse "med2"
+```{r}
+med2<-c(median(moyenne[6:7]),0)
+c=6
+d=7
+med2<-c(0,0)
+for (i in 1:8){
+  c=6+7*(i-1)
+  d=7+7*(i-1)
+  med2[1]=median(med2[1:2])
+  print(med2)
+  med2[2]=median(median(moyenne[c:d]))
+}
+med2[1]=median(med2[1:2])
+```
+Finalmente se gráfica con el fin de distinguir de forma visual que tan distintos son los valores.
+```{r}
+ix=c(1:2)
+ygrec=c(med1[1],med2[1])
+plot(main="Promedio de pasos entre semana vs fines de semana",ix,ygrec,"h", col="darkcyan",xlab="Entre semana (1.0)  Fines de semana (2.0)",ylab="Promedio de pasos", asp=0.009)
+```
+
+#Conclusiones
+* En terminos generales se puede observar que la estrategia propuesta de sustituir los valores "NA" por "0" no fue la mejor, puesto que todas las medianas se vuelven practicamente cero, debido a que hay puntos en los días en que no se recabaron datos. 
+* Consideré más descriptivo el comportamiento de la media porque si se puede observar un cambio de comportamiento más claro en comparación a la mediana; yo supongo que la razón de esto es que la media se ve más afectada por valores extremos y eso hace que se compense un poco.
+* Aparentemente el usuario del dispositivo del cual provienen los datos camina casi el doble durante los fines de semana que entre semana.
+* Como ejercicio, esta practica me ha servido para entender un poco la metodología. Sin embargo encuentro de pronto que alguien externo pueda entender mi explicación debido a mi sintaxis.
