@@ -30,6 +30,17 @@ nrow(activity)==length(jour)*sum(activity$date==jour[1])
 ```
 
 ###Cortar la base de datos
+Graficamos la distribución de pasos por mes, creando 2 vectores uno que reciba los datos de octubre y otro que reciba los datos de noviembre. Para ello se usará grep y se buscara aquellos que tengan "2012-10"
+```{r}
+oct<-activity$steps[grep("2012-10",activity$date)]
+plot(1:length(oct)/288,oct,main='Pasos en octubre', xlab='Día del mes',ylab='pasos',"p", col="tomato")
+```
+
+Se hace lo mismo para noviembre:
+```{r}
+nov<-activity$steps[grep("2012-11",activity$date)]
+plot(1:length(nov)/288,nov,main='Pasos en noviembre', xlab='Día del mes',ylab='pasos',"p", col="steelblue4")
+```
 
 Ahora de la base de datos grande seria conveniente cortarla por semanas, se sabe que el primero de octubre de 2012 es lunes, por lo tanto hasta el 8 de octubre sería una semana entonces, insertaremos una columna extra a la base de datos (se llamará "counting") que a cada entrada le asigne un número. 
 ```{r}
@@ -44,15 +55,16 @@ En la columna de "Steps" hay algunos valores NA para ello se sustituiran los val
 ```{r}
 nrow(activity)==(sum(is.na(activity$steps))+ length(which(activity$steps>=0)))
 ```
-Ahora se procede a cambiar todos los valores NA por 0, se revisara viendo las primeras lineas y se comprobara que ya no existan NA, es espera que al sumar aquellos valores NA el total sea 0 en la columna "Steps"
+Ahora se procede a cambiar todos los valores NA por 0, se revisara viendo las primeras lineas y se comprobara que ya no existan NA, es espera que al sumar aquellos valores NA el total sean valores de una distribución normal con probabilidad de 0.25en la columna "Steps"
 ```{r}
-activity$steps[is.na(activity$steps)]<-0
+#activity$steps[is.na(activity$steps)]<-0
+activity$steps[is.na(activity$steps)]<-rnorm(length(is.na(activity$steps)),5,0.5)
 head(activity)
 sum(is.na(activity$steps))
 ```
 
 #Calculando medias y medianas
-¡Genial! Ahora hay que sacar la media y la mediana de cada día. Después graficar todo.
+¡Genial! Ahora hay que sacar la media y la mediana de cada día. Para ello se ocupara un ciclo for que calcule una media y una mediana para cada set de 288 datos que es lo equivalente a un día. Después graficar todo.
 ```{r}
 j=1
 medianne<-c(1:61)
