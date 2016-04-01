@@ -1,0 +1,11 @@
+PASS	Basic Statistics	Partial_SRR2467151.fastq
+PASS	Per base sequence quality	Partial_SRR2467151.fastq
+PASS	Per sequence quality scores	Partial_SRR2467151.fastq
+FAIL	Per base sequence content	Partial_SRR2467151.fastq
+FAIL	Per base GC content	Partial_SRR2467151.fastq
+PASS	Per sequence GC content	Partial_SRR2467151.fastq
+PASS	Per base N content	Partial_SRR2467151.fastq
+PASS	Sequence Length Distribution	Partial_SRR2467151.fastq
+PASS	Sequence Duplication Levels	Partial_SRR2467151.fastq
+PASS	Overrepresented sequences	Partial_SRR2467151.fastq
+WARN	Kmer Content	Partial_SRR2467151.fastq
